@@ -1,0 +1,56 @@
+{% extends "navbar.html" %}
+{% block content %}
+<div class="content">
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <h4 class="title">Air Temperature</h4>
+            <p class="category">Realtime temperature reading</p>
+          </div>
+          <div class="content">
+            <div id="tempAirChart" class="ct-chart ct-major-twelfth"></div>
+          </div>
+        </div>
+      </div>
+       <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <h4 class="title">Water Temperature</h4>
+            <p class="category">Realtime temperature reading</p>
+          </div>
+          <div class="content">
+            <div id="tempWaterChart" class="ct-chart ct-major-twelfth"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <h4 class="title">Humidity</h4>
+            <p class="category">Realtime humidity reading</p>
+          </div>
+          <div class="content">
+            <div id="humChart" class="ct-chart ct-major-twelfth"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <h4 class="title">Water Used</h4>
+            <p class="category">Realtime used water level reading</p>
+          </div>
+          <div class="content">
+            <div id="usedWaterChart" class="ct-chart ct-major-twelfth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock content %}
