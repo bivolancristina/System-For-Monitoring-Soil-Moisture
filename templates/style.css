@@ -1,8 +1,0 @@
-
-*{margin: 0;}
-body{background-image: url(plant.jpg);background-size: cover;}
-button{padding:10px;background-color:transparent;border:2px solid white;color:white;font-size:18px;}
-.heading{background-color:rgba(0,0,0,0.6);text-align:center;color:white;}
-.but1{background-color:rgba(0,0,0,0.6);text-align:center;color:white;margin-top:100px;}
-.but1 button{margin:10px 10px 10px 10px;}
-.but1t1 button a:hover{background-color:blue;opacity:0.8;}
