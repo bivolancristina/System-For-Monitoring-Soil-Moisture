@@ -117,13 +117,29 @@ def api_getData():
       temperatureWater = water.get_water_temperature()
       humidity = water.get_air_humidity()
       moisture = water.get_soil_status()
-      usedWater = water.get_used_water()
+      usedWater = water.return_FlowRate()
       if usedWater == 0 and last_water_value != usedWater and last_connected != user_email:
         with app.app_context():
           msg = Message(subject="Alert",
                         sender = app.config.get("MAIL_USERNAME"),
                         recipients = [user_email],
                         body = "Your tank is empty. Please refill!"
+                        )
+          mail.send(msg)
+      if water.get_water_temperature() < 15 and last_connected != user_email:
+        with app.app_context():
+          msg = Message(subject="Alert",
+                        sender = app.config.get("MAIL_USERNAME"),
+                        recipients = [user_email],
+                        body = "Your water is too cold for the plants!Please change it!"
+                        )
+          mail.send(msg)
+      if water.get_water_temperature() > 30 and last_connected != user_email:
+        with app.app_context():
+          msg = Message(subject="Alert",
+                        sender = app.config.get("MAIL_USERNAME"),
+                        recipients = [user_email],
+                        body = "Your water is too hot for the plants!Please change it!"
                         )
           mail.send(msg)
       last_water_value = usedWater
@@ -190,6 +206,7 @@ def changeStatus(status):
     db.child("pump").push(data)
     if status == 'A':
         running = False
+        water.reset_count_water()
         for process in psutil.process_iter():
             try:
                 if process.cmdline()[1] == 'auto_water.py':
@@ -201,8 +218,17 @@ def changeStatus(status):
     elif status == 'M' or status == 'F':
         water.pump_off()
         os.system("pkill -f auto_water.py")
+        if water.get_soil_status() == 1 : 
+            with app.app_context():
+               msg = Message(subject="Alert",
+                        sender = app.config.get("MAIL_USERNAME"),
+                        recipients = [user_email],
+                        body = "Your plants need water!Please turn on automated watering!"
+                        )
+               mail.send(msg)
     elif status == 'O':
         water.pump_on_manual()
+        water.reset_count_water()
 
     return status
   except:    

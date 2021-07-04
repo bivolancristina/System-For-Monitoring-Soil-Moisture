@@ -16,7 +16,12 @@ from time import sleep
 '''
 init = False
 global count
+global flowRate
+global old_time
+old_time = 0
+flowRate = 0
 count = 0
+
 
 GPIO.setmode(GPIO.BOARD) 
 os.system('modprobe w1-gpio')
@@ -32,6 +37,9 @@ def read_temp_raw():
    lines = f.readlines()
    f.close()
    return lines
+
+def current_milli_time():
+   return int(time.time() * 1000)
 
 def get_water_temperature():
     lines = read_temp_raw()
@@ -57,21 +65,33 @@ def get_air_humidity(gpiopin = 6):
     humidity, temperature = Adafruit_DHT.read_retry(11, gpiopin)
     return humidity
 
+GPIO.setup(29, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+
+
 def countPulse(channel):
    global count
    count = count+1
+   
 
-def get_used_water(pin = 29):
-    flowRate = 0
+GPIO.add_event_detect(29, GPIO.FALLING, callback=countPulse)
+
+def reset_count_water(): 
+    global count
+    global flowRate
     try:
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-        GPIO.add_event_detect(pin, GPIO.FALLING, callback=countPulse)
-        flowRate = (count * 2.25)        #Take counted pulses in the last second and multiply by 2.25mL 
-        flowRate = flowRate * 60         #Convert seconds to minutes, giving you mL / Minute
-        flowRate = flowRate / 1000       #Convert mL to Liters, giving you Liters / Minute
-    finally:
+        print(count)
+        flowRate = 0
+        count = 0
+    except KeyboardInterrupt:
         GPIO.cleanup()
+
+def return_FlowRate():
+    global flowRate 
+    global old_time
+    current_time = current_milli_time()
+    flowRate = round(((1000/ (int)(current_time - old_time)) * count) / 90,3)
+    flowRate = round((flowRate / 60 ),3)
+    old_time = current_milli_time()
     return flowRate
 
 def init_output(pin):
@@ -83,9 +103,10 @@ def auto_water(delay = 10, pump_pin = 7, water_sensor_pin = 8):
     init_output(pump_pin)
     print("Press CTRL+C to interrupt.")
     try:
-        if get_soil_status() == 1:
-            time.sleep(delay)
-            pump_on_auto(pump_pin, 5)
+        if get_soil_status() == 1 and get_air_temperature() >= 15 and get_air_temperature() <= 30 and get_air_humidity() != 100 and get_water_temperature() >= 15 and get_water_temperature() <= 30:
+            pump_on_auto(pump_pin, 10)
+        elif get_soil_status() == 1 and get_air_temperature() >= 30 and get_water_temperature() >= 15 and get_water_temperature() <= 30:
+            pump_on_auto(pump_pin, 30)
     except KeyboardInterrupt: 
         GPIO.cleanup() 
 
