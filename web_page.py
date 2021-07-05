@@ -15,8 +15,6 @@ app.secret_key = os.urandom(12)
 user_email = 'bivolancristina15@gmail.com'
 global user_pass
 global last_water_value
-global last_connected
-last_connected = ''
 last_water_value = 99
 
 mail = Mail(app)
@@ -111,14 +109,13 @@ def graph():
 def api_getData():
   if request.method == 'POST':
     global last_water_value
-    global last_connected
     try:
       temperatureAir = water.get_air_temperature()
       temperatureWater = water.get_water_temperature()
       humidity = water.get_air_humidity()
       moisture = water.get_soil_status()
       usedWater = water.return_FlowRate()
-      if usedWater == 0 and last_water_value != usedWater and last_connected != user_email:
+      if usedWater == 0 and moisture == 1 and last_water_value != usedWater:
         with app.app_context():
           msg = Message(subject="Alert",
                         sender = app.config.get("MAIL_USERNAME"),
@@ -126,7 +123,7 @@ def api_getData():
                         body = "Your tank is empty. Please refill!"
                         )
           mail.send(msg)
-      if water.get_water_temperature() < 15 and last_connected != user_email:
+      if water.get_water_temperature() < 15:
         with app.app_context():
           msg = Message(subject="Alert",
                         sender = app.config.get("MAIL_USERNAME"),
@@ -134,7 +131,7 @@ def api_getData():
                         body = "Your water is too cold for the plants!Please change it!"
                         )
           mail.send(msg)
-      if water.get_water_temperature() > 30 and last_connected != user_email:
+      if water.get_water_temperature() > 30:
         with app.app_context():
           msg = Message(subject="Alert",
                         sender = app.config.get("MAIL_USERNAME"),
@@ -143,7 +140,6 @@ def api_getData():
                         )
           mail.send(msg)
       last_water_value = usedWater
-      last_connected = user_email
       if (moisture == 1):
         message = "Watering is needed!"
       else:
